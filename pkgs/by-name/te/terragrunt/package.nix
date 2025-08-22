@@ -16,44 +16,40 @@ buildGoModule (finalAttrs: {
     hash = "sha256-rT/GsWEezekWinBj2Wp5smCrf99VBUw8Yw3S+VpwfTQ=";
   };
 
-  nativeBuildInputs = [
-    mockgen
-  ];
+      nativeBuildInputs = [
+        versionCheckHook
+        mockgen
+      ];
 
-  proxyVendor = true;
-
-  preBuild = ''
+      preBuild = ''
     make generate-mocks
-  '';
+      '';
 
   vendorHash = "sha256-+UtLq5EwUeB4GH324tYV3jqArpdvX98UP7WZSTlgZwU=";
 
   excludedPackages = [ "test/flake" ];
 
-  doCheck = false;
+      doCheck = false;
 
-  ldflags = [
-    "-s"
-    "-X github.com/gruntwork-io/go-commons/version.Version=v${finalAttrs.version}"
-    "-extldflags '-static'"
-  ];
+      ldflags = [
+        "-s"
+        "-w"
+        "-X github.com/gruntwork-io/go-commons/version.Version=v${finalAttrs.version}"
+        "-extldflags '-static'"
+      ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  versionCheckProgramArg = "--version";
-  doInstallCheck = true;
+      doInstallCheck = true;
 
-  meta = {
-    homepage = "https://terragrunt.gruntwork.io";
-    changelog = "https://github.com/gruntwork-io/terragrunt/releases/tag/v${finalAttrs.version}";
-    description = "Thin wrapper for Terraform that supports locking for Terraform state and enforces best practices";
-    mainProgram = "terragrunt";
-    license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [
-      jk
-      qjoly
-      kashw2
-    ];
-  };
-})
+      meta = with lib; {
+        homepage = "https://terragrunt.gruntwork.io";
+        changelog = "https://github.com/gruntwork-io/terragrunt/releases/tag/v${finalAttrs.version}";
+        description = "Thin wrapper for Terraform that supports locking for Terraform state and enforces best practices";
+        mainProgram = "terragrunt";
+        license = licenses.mit;
+        maintainers = with maintainers; [
+          jk
+          qjoly
+          kashw2
+        ];
+      };
+    })
