@@ -24,16 +24,28 @@ in
     package = mkPackageOption pkgs "homebox" { };
     user = mkOption {
       type = types.str;
+<<<<<<< HEAD
       default = defaultUser;
+=======
+      default = "homebox";
+>>>>>>> 8d67c793b407 (nixos/homebox: update for v0.20.0 storage options)
       description = "User account under which Homebox runs.";
     };
     group = mkOption {
       type = types.str;
+<<<<<<< HEAD
       default = defaultGroup;
       description = "Group under which Homebox runs.";
     };
     settings = mkOption {
       type = types.submodule { freeformType = types.attrsOf (types.nullOr types.str); };
+=======
+      default = "homebox";
+      description = "Group under which Homebox runs.";
+    };
+    settings = mkOption {
+      type = types.attrsOf types.str;
+>>>>>>> 8d67c793b407 (nixos/homebox: update for v0.20.0 storage options)
       defaultText = lib.literalExpression ''
         {
           HBOX_STORAGE_CONN_STRING = "file:///var/lib/homebox";
@@ -64,6 +76,7 @@ in
   };
 
   config = mkIf cfg.enable {
+<<<<<<< HEAD
     assertions = [
       {
         assertion = !(cfg.settings ? HBOX_STORAGE_DATA);
@@ -85,6 +98,16 @@ in
       groups = mkIf (cfg.group == defaultGroup) { ${defaultGroup} = { }; };
     };
 
+=======
+    warnings = mkIf (cfg.settings ? HBOX_STORAGE_DATA) [
+      "`services.homebox.settings.HBOX_STORAGE_DATA` has been deprecated. Please use `services.homebox.settings.HBOX_STORAGE_CONN_STRING` and `services.homebox.settings.HBOX_STORAGE_PREFIX_PATH`instead."
+    ];
+    users.users.${cfg.user} = {
+      isSystemUser = true;
+      group = cfg.group;
+    };
+    users.groups.${cfg.group} = { };
+>>>>>>> 8d67c793b407 (nixos/homebox: update for v0.20.0 storage options)
     services.homebox.settings = lib.mkMerge [
       (lib.mapAttrs (_: mkDefault) {
         HBOX_STORAGE_CONN_STRING = "file:///var/lib/homebox";
@@ -121,6 +144,7 @@ in
         }
       ];
     };
+<<<<<<< HEAD
     systemd.services.homebox = {
       requires = lib.optional cfg.database.createLocally "postgresql.target";
       after = lib.optional cfg.database.createLocally "postgresql.target";
@@ -138,41 +162,73 @@ in
         PrivateDevices = true;
         Restart = "always";
         StateDirectory = "homebox";
+=======
+>>>>>>> 8d67c793b407 (nixos/homebox: update for v0.20.0 storage options)
 
-        # Hardening
-        CapabilityBoundingSet = "";
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
-        PrivateUsers = true;
-        ProtectClock = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectHostname = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectProc = "invisible";
-        ProcSubset = "pid";
-        ProtectSystem = "strict";
-        RestrictAddressFamilies = [
-          "AF_UNIX"
-          "AF_INET"
-          "AF_INET6"
-          "AF_NETLINK"
+    systemd =
+      let
+        workDir =
+          if (lib.strings.hasPrefix "file://" cfg.settings.HBOX_STORAGE_CONN_STRING) then
+            lib.strings.replaceStrings [ "file://" ] [ "" ] cfg.settings.HBOX_STORAGE_CONN_STRING
+          else
+            "/var/lib/homebox";
+        dataDir = "${workDir}/${cfg.settings.HBOX_STORAGE_PREFIX_PATH}";
+      in
+      {
+        tmpfiles.rules = [
+          "d '${workDir}' 0700 ${cfg.user} ${cfg.group} - -"
+          "d '${dataDir}' 0700 ${cfg.user} ${cfg.group} - -"
         ];
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        SystemCallArchitectures = "native";
-        SystemCallFilter = [
-          "@system-service"
-          "@pkey"
-        ];
-        RestrictSUIDSGID = true;
-        PrivateMounts = true;
-        UMask = "0077";
+        services.homebox = {
+          requires = lib.optional cfg.database.createLocally "postgresql.target";
+          after = lib.optional cfg.database.createLocally "postgresql.target";
+          environment = cfg.settings;
+          serviceConfig = {
+            User = cfg.user;
+            Group = cfg.group;
+            ExecStart = lib.getExe cfg.package;
+            WorkingDirectory = workDir;
+            ReadWritePaths = [ workDir ];
+            LimitNOFILE = "1048576";
+            PrivateTmp = true;
+            PrivateDevices = true;
+            Restart = "always";
+
+            # Hardening
+            CapabilityBoundingSet = "";
+            LockPersonality = true;
+            MemoryDenyWriteExecute = true;
+            PrivateUsers = true;
+            ProtectClock = true;
+            ProtectControlGroups = true;
+            ProtectHome = true;
+            ProtectHostname = true;
+            ProtectKernelLogs = true;
+            ProtectKernelModules = true;
+            ProtectKernelTunables = true;
+            ProtectProc = "invisible";
+            ProcSubset = "pid";
+            ProtectSystem = "strict";
+            RestrictAddressFamilies = [
+              "AF_UNIX"
+              "AF_INET"
+              "AF_INET6"
+              "AF_NETLINK"
+            ];
+            RestrictNamespaces = true;
+            RestrictRealtime = true;
+            SystemCallArchitectures = "native";
+            SystemCallFilter = [
+              "@system-service"
+              "@pkey"
+            ];
+            RestrictSUIDSGID = true;
+            PrivateMounts = true;
+            UMask = "0077";
+          };
+          wantedBy = [ "multi-user.target" ];
+        };
       };
-      wantedBy = [ "multi-user.target" ];
-    };
   };
   meta.maintainers = with lib.maintainers; [
     patrickdag
