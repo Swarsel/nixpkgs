@@ -6,10 +6,10 @@
   fzy,
   lib,
   nix-index-unwrapped,
-  nix,
   rustPlatform,
   testers,
   buildPackages,
+  nix ? nix,
 }:
 
 rustPlatform.buildRustPackage rec {
