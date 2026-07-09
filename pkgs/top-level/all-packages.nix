@@ -8897,6 +8897,11 @@ with pkgs;
     wlroots_0_20
     ;
 
+  inherit (callPackages ../development/libraries/scenefx { })
+    scenefx_0_4
+    scenefx_0_5
+    ;
+
   sway-contrib = recurseIntoAttrs (callPackages ../applications/misc/sway-contrib { });
 
   ikiwiki = callPackage ../applications/misc/ikiwiki {
